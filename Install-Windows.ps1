@@ -141,10 +141,13 @@ if ($SkipFontInstall) {
         )
         foreach ($key in $fontKeys) {
             if (Test-Path $key) {
-                $names = (Get-ItemProperty $key -ErrorAction SilentlyContinue).PSObject.Properties.Name
-                if ($names -match 'CaskaydiaCove|Caskaydia') {
-                    $fontInstalled = $true
-                    break
+                $props = Get-ItemProperty $key -ErrorAction SilentlyContinue
+                if ($props) {
+                    $names = $props.PSObject.Properties.Name
+                    if ($names -match 'CaskaydiaCove|Caskaydia') {
+                        $fontInstalled = $true
+                        break
+                    }
                 }
             }
         }
@@ -370,6 +373,8 @@ if (Test-Path -Path $localprofile) {
 
 Write-Step 'Checking Windows Terminal font settings...'
 
+$nerdFont = 'CaskaydiaCove Nerd Font'
+
 $wtSettingsPaths = @(
     "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json",
     "$env:LOCALAPPDATA\Microsoft\Windows Terminal\settings.json"
@@ -380,24 +385,31 @@ $wtSettingsPath = $wtSettingsPaths | Where-Object { Test-Path $_ } | Select-Obje
 if ($wtSettingsPath) {
     $wtSettings = Get-Content $wtSettingsPath -Raw | ConvertFrom-Json -AsHashtable
 
-    $defaultsProfile = $null
-    if ($wtSettings.ContainsKey('profiles') -and $wtSettings.profiles.ContainsKey('defaults')) {
-        $defaultsProfile = $wtSettings.profiles.defaults
-    }
-
     $currentFont = $null
-    if ($defaultsProfile -and $defaultsProfile.ContainsKey('font') -and $defaultsProfile.font.ContainsKey('face')) {
-        $currentFont = $defaultsProfile.font.face
+    if ($wtSettings.ContainsKey('profiles') -and
+        $wtSettings.profiles.ContainsKey('defaults') -and
+        $wtSettings.profiles.defaults.ContainsKey('font') -and
+        $wtSettings.profiles.defaults.font.ContainsKey('face')) {
+        $currentFont = $wtSettings.profiles.defaults.font.face
     }
 
     if ($currentFont -match 'Nerd|CaskaydiaCove|Caskaydia') {
         Write-Skipped "Windows Terminal already using Nerd Font: $currentFont"
     } else {
-        Write-Warn "Windows Terminal default font is not a Nerd Font."
-        Write-Info "To set it, open Windows Terminal Settings > Defaults > Appearance > Font face"
-        Write-Info "and set it to 'CaskaydiaCove Nerd Font'."
-        Write-Info "Or add this to your Windows Terminal settings.json under profiles.defaults:"
-        Write-Host '    "font": { "face": "CaskaydiaCove Nerd Font" }' -ForegroundColor White
+        # Ensure the profiles.defaults.font path exists
+        if (-not $wtSettings.ContainsKey('profiles')) {
+            $wtSettings['profiles'] = @{}
+        }
+        if (-not $wtSettings.profiles.ContainsKey('defaults')) {
+            $wtSettings.profiles['defaults'] = @{}
+        }
+        if (-not $wtSettings.profiles.defaults.ContainsKey('font')) {
+            $wtSettings.profiles.defaults['font'] = @{}
+        }
+        $wtSettings.profiles.defaults.font['face'] = $nerdFont
+
+        $wtSettings | ConvertTo-Json -Depth 20 | Set-Content $wtSettingsPath -Encoding UTF8NoBOM
+        Write-Info "Set Windows Terminal default font to '$nerdFont'."
     }
 } else {
     Write-Skipped 'Windows Terminal settings not found (not installed or using portable).'
@@ -412,13 +424,18 @@ Write-Step 'Checking VSCode terminal font settings...'
 $vscodeSettingsPath = Join-Path $env:APPDATA 'Code\User\settings.json'
 
 if (Test-Path $vscodeSettingsPath) {
-    $vscodeContent = Get-Content $vscodeSettingsPath -Raw
-    if ($vscodeContent -match 'Nerd|CaskaydiaCove|Caskaydia') {
-        Write-Skipped 'VSCode terminal font already configured with a Nerd Font.'
+    $vscodeSettings = Get-Content $vscodeSettingsPath -Raw | ConvertFrom-Json -AsHashtable
+    $currentVscodeFont = $null
+    if ($vscodeSettings.ContainsKey('terminal.integrated.fontFamily')) {
+        $currentVscodeFont = $vscodeSettings['terminal.integrated.fontFamily']
+    }
+
+    if ($currentVscodeFont -match 'Nerd|CaskaydiaCove|Caskaydia') {
+        Write-Skipped "VSCode terminal font already configured: $currentVscodeFont"
     } else {
-        Write-Warn 'VSCode terminal font may not be set to a Nerd Font.'
-        Write-Info 'Add the following to your VSCode settings.json:'
-        Write-Host '    "terminal.integrated.fontFamily": "''CaskaydiaCove Nerd Font''"' -ForegroundColor White
+        $vscodeSettings['terminal.integrated.fontFamily'] = "'$nerdFont'"
+        $vscodeSettings | ConvertTo-Json -Depth 20 | Set-Content $vscodeSettingsPath -Encoding UTF8NoBOM
+        Write-Info "Set VSCode terminal font to '$nerdFont'."
     }
 } else {
     Write-Skipped 'VSCode settings.json not found.'
@@ -432,7 +449,6 @@ Write-Host "`n=== Setup Complete ===" -ForegroundColor Green
 Write-Host ''
 Write-Host '  Next steps:' -ForegroundColor Cyan
 Write-Host '  1. Open a new terminal to load the updated profile.'
-Write-Host '  2. Ensure your terminal app uses "CaskaydiaCove Nerd Font" for icons to render.'
-Write-Host '  3. Run "starship explain" to verify the prompt modules.'
-Write-Host '  4. Run "ghcs" to suggest commands or "ghce" to explain commands via Copilot.'
+Write-Host '  2. Run "starship explain" to verify the prompt modules.'
+Write-Host '  3. Run "ghcs" to suggest commands or "ghce" to explain commands via Copilot.'
 Write-Host ''
