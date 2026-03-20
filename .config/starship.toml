@@ -57,7 +57,7 @@ format = 'at [$path](#a8e6a3 bold)[$read_only]($read_only_style) '
 
 # Shows current git branch
 [git_branch]
-symbol = ' '
+symbol = ' '
 format = 'via [$symbol$branch]($style)'
 # truncation_length = 4
 truncation_symbol = '…/'
@@ -94,7 +94,7 @@ disabled = false
 
 # Shows Python version and virtualenv
 [python]
-symbol = ' '
+symbol = ' '
 format = '[$symbol$version( \($virtualenv\))]($style) '
 style = '#c5e1a5'
 disabled = false
