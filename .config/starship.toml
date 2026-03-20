@@ -1,34 +1,41 @@
 # ~/.config/starship.toml
+# Green-heavy theme with teal, lime, and warm accents
 
 add_newline = true
 command_timeout = 1000
 format = """\
-[╭╴](238)$env_var $os$username$hostname$kubernetes$directory$git_branch$git_status \
-\n[╰─](238)$character"""
+[╭╴](bold #4a7c59)$os$username$hostname$kubernetes$directory$git_branch$git_status \
+$nodejs$python$package\
+\n[╰─](bold #4a7c59)$cmd_duration$character"""
 
 # Drop ugly default prompt characters
 [character]
-success_symbol = ''
-error_symbol = ''
+success_symbol = '[❯](bold #66bb6a)'
+error_symbol = '[❯](bold #ef9a9a)'
+
+# Shows elapsed time for long-running commands
+[cmd_duration]
+min_time = 2_000
+format = '[took $duration](#fff59d) '
 
 # ---
 
 [os]
-format = '[$symbol](bold white) '
+format = '[$symbol](bold #a8e6a3) '
 disabled = false
 
 [os.symbols]
-Windows = ' '
+Windows = ' '
 Arch = '󰣇 '
-Ubuntu = ' '
+Ubuntu = ' '
 Macos = '󰀵 '
 
-# ---y
+# ---
 
 # Shows the username
 [username]
-style_user = 'white bold'
-style_root = 'black bold'
+style_user = '#c5e1a5 bold'
+style_root = '#ef9a9a bold'
 format = '[$user]($style) '
 disabled = false
 show_always = true
@@ -36,7 +43,7 @@ show_always = true
 # Shows the hostname
 [hostname]
 ssh_only = false
-format = 'on [$hostname](bold yellow) '
+format = 'on [$hostname](#b2dfdb bold) '
 disabled = false
 
 # Shows current directory
@@ -44,37 +51,58 @@ disabled = false
 truncation_length = 1
 truncation_symbol = '…/'
 home_symbol = '󰋜 ~'
-read_only_style = '197'
-read_only = '  '
-format = 'at [$path]($style)[$read_only]($read_only_style) '
+read_only_style = '#ef9a9a'
+read_only = '  '
+format = 'at [$path](#a8e6a3 bold)[$read_only]($read_only_style) '
 
 # Shows current git branch
 [git_branch]
-symbol = ' '
+symbol = ' '
 format = 'via [$symbol$branch]($style)'
 # truncation_length = 4
 truncation_symbol = '…/'
-style = 'bold green'
+style = 'bold #66bb6a'
 
 # Shows current git status
 [git_status]
 format = '([ \( $all_status$ahead_behind\)]($style) )'
-style = 'bold green'
-conflicted = '[ confliced=${count}](red) '
-up_to_date = '[󰘽 up-to-date](green) '
-untracked = '[󰋗 untracked=${count}](red) '
-ahead = ' ahead=${count}'
-diverged = ' ahead=${ahead_count}  behind=${behind_count}'
-behind = ' behind=${count}'
-stashed = '[ stashed=${count}](green) '
-modified = '[󰛿 modified=${count}](yellow) '
-staged = '[󰐗 staged=${count}](green) '
-renamed = '[󱍸 renamed=${count}](yellow) '
-deleted = '[󰍶 deleted=${count}](red) '
+style = 'bold #66bb6a'
+conflicted = '[ conflicted=${count}](#ef9a9a) '
+up_to_date = '[󰘽 up-to-date](#a8e6a3) '
+untracked = '[󰋗 untracked=${count}](#ef9a9a) '
+ahead = ' ahead=${count}'
+diverged = ' ahead=${ahead_count}  behind=${behind_count}'
+behind = ' behind=${count}'
+stashed = '[ stashed=${count}](#b2dfdb) '
+modified = '[󰛿 modified=${count}](#fff59d) '
+staged = '[󰐗 staged=${count}](#a8e6a3) '
+renamed = '[󱍸 renamed=${count}](#fff59d) '
+deleted = '[󰍶 deleted=${count}](#ef9a9a) '
 
 # Shows kubernetes context and namespace
 [kubernetes]
-format = 'via [󱃾 $context\($namespace\)](bold purple) '
+format = 'via [󱃾 $context\($namespace\)](#b2dfdb bold) '
+disabled = false
+
+# ---
+
+# Shows Node.js version when in a JS/TS project
+[nodejs]
+symbol = '󰎙 '
+format = '[$symbol$version](#66bb6a) '
+disabled = false
+
+# Shows Python version and virtualenv
+[python]
+symbol = ' '
+format = '[$symbol$version( \($virtualenv\))]($style) '
+style = '#c5e1a5'
+disabled = false
+
+# Shows package version from package.json / pyproject.toml
+[package]
+symbol = '󰏗 '
+format = '[$symbol$version](#b2dfdb) '
 disabled = false
 
 # ---
