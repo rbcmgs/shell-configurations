@@ -116,12 +116,6 @@ disabled = true
 [helm]
 disabled = true
 
-[python]
-disabled = true
-
-[nodejs]
-disabled = true
-
 [ruby]
 disabled = true
 
