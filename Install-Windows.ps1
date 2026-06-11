@@ -329,7 +329,7 @@ if ($isOneDrive) {
 
 # If the local profile exists, source it to get the local profile settings
 $localprofile = "$HOME\Documents\PowerShell\$($MyInvocation.MyCommand.Name)"
-if (Test-Path -Path $localprofile) {
+if ((Test-Path -Path $localprofile) -and ((Resolve-Path -Path $localprofile).Path -ne $PSCommandPath)) {
   . $localprofile
 }
 '@

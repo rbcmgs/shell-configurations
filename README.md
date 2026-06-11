@@ -86,7 +86,7 @@ Copy-Item PowerShell\Microsoft.PowerShell_profile.ps1 "$HOME\Documents\PowerShel
 >
 > ```powershell
 > $localprofile = "$HOME\Documents\PowerShell\$($MyInvocation.MyCommand.Name)"
-> if (Test-Path -Path $localprofile) {
+> if ((Test-Path -Path $localprofile) -and ((Resolve-Path -Path $localprofile).Path -ne $PSCommandPath)) {
 >   . $localprofile
 > }
 > ```
