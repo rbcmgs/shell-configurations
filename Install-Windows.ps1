@@ -175,9 +175,6 @@ if ($SkipFontInstall) {
             $fontFiles = Get-ChildItem $tempDir -Filter '*.ttf' -Recurse |
                 Where-Object { $_.Name -notmatch 'Windows Compatible' }
 
-            $shell = New-Object -ComObject Shell.Application
-            $fontsFolder = $shell.Namespace(0x14) # Special Fonts folder
-
             foreach ($font in $fontFiles) {
                 Copy-Item $font.FullName $userFontDir -Force
 
