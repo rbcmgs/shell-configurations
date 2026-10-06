@@ -210,7 +210,7 @@ if (Get-Module -ListAvailable -Name Terminal-Icons) {
 }
 
 # ============================================================
-# 4. Install GitHub CLI + Copilot extension
+# 4. Install GitHub CLI, Git, Copilot CLI and Claude Code
 # ============================================================
 
 Write-Step 'Checking GitHub CLI installation...'
@@ -236,31 +236,32 @@ if (Get-Command gh -ErrorAction SilentlyContinue) {
     }
 }
 
-if (Get-Command gh -ErrorAction SilentlyContinue) {
-    Write-Step 'Checking GitHub Copilot CLI extension...'
-
-    $copilotInstalled = gh extension list 2>$null | Select-String 'gh-copilot'
-    if ($copilotInstalled) {
-        Write-Skipped 'gh-copilot extension already installed.'
+function Install-WingetTool {
+    param([string]$Command, [string]$Id, [string]$Name)
+    if (Get-Command $Command -ErrorAction SilentlyContinue) {
+        Write-Skipped "$Name already installed."
+    } elseif (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Warn "winget is not available. Skipping $Name."
     } else {
-        # Check if the user is authenticated
-        $authStatus = gh auth status 2>&1
-        if ($authStatus -match 'Logged in') {
-            Write-Info 'Installing gh-copilot extension...'
-            gh extension install github/gh-copilot 2>&1
-            if ($LASTEXITCODE -eq 0) {
-                Write-Info 'gh-copilot extension installed. Use ghcs (suggest) and ghce (explain) after loading profile.'
-            } else {
-                Write-Warn 'gh-copilot extension install failed. You can install it manually: gh extension install github/gh-copilot'
-            }
-        } else {
-            Write-Warn 'GitHub CLI is not authenticated. Run "gh auth login" first, then:'
-            Write-Info '  gh extension install github/gh-copilot'
-        }
+        Write-Info "Installing $Name via winget..."
+        winget install --id $Id --exact --accept-source-agreements --accept-package-agreements
+        if ($LASTEXITCODE -ne 0) { Write-Warn "$Name installation failed (exit code $LASTEXITCODE)." }
     }
-} else {
-    Write-Skipped 'GitHub CLI not available. Skipping Copilot extension setup.'
 }
+
+Write-Step 'Checking Git for Windows (required by Claude Code)...'
+Install-WingetTool -Command git -Id Git.Git -Name 'Git for Windows'
+
+Write-Step 'Checking GitHub Copilot CLI...'
+Install-WingetTool -Command copilot -Id GitHub.Copilot -Name 'GitHub Copilot CLI'
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+    if (gh extension list 2>$null | Select-String 'gh-copilot') {
+        Write-Warn 'The deprecated gh-copilot extension is installed. Remove it: gh extension remove gh-copilot'
+    }
+}
+
+Write-Step 'Checking Claude Code...'
+Install-WingetTool -Command claude -Id Anthropic.ClaudeCode -Name 'Claude Code'
 
 # ============================================================
 # 5. Copy Starship configuration
@@ -447,5 +448,5 @@ Write-Host ''
 Write-Host '  Next steps:' -ForegroundColor Cyan
 Write-Host '  1. Open a new terminal to load the updated profile.'
 Write-Host '  2. Run "starship explain" to verify the prompt modules.'
-Write-Host '  3. Run "ghcs" to suggest commands or "ghce" to explain commands via Copilot.'
+Write-Host '  3. Run "copilot" or "claude" in a project, and sign in on first use.'
 Write-Host ''

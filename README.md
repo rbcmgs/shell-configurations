@@ -39,7 +39,7 @@ The script will:
 1. Install **Starship** via winget (if not already installed)
 2. Install **CaskaydiaCove Nerd Font** to the user font directory
 3. Install **Terminal-Icons** PowerShell module
-4. Install **GitHub CLI** + **gh-copilot** extension for AI-powered command suggestions
+4. Install **GitHub CLI**, **Git for Windows**, **GitHub Copilot CLI** (`copilot`) and **Claude Code** (`claude`) via winget
 5. Copy **starship.toml** to `~/.config/`
 6. Set up the **PowerShell profile** (handles OneDrive vs local Documents automatically)
 7. Check **Windows Terminal** and **VSCode** font settings and provide guidance
@@ -135,8 +135,9 @@ For the best experience in VSCode, set a Nerd Font as your terminal font:
 
 - Nerd Font icons for files and folders in `Get-ChildItem` output
 
-### GitHub Copilot CLI (PowerShell)
+### AI coding agents
 
-- `ghcs` — Copilot Suggest: suggests shell commands from natural language descriptions
-- `ghce` — Copilot Explain: explains what a command does in plain English
-- Requires GitHub CLI (`gh`) and the `gh-copilot` extension
+- `copilot` (GitHub Copilot CLI) and `claude` (Claude Code) are installed by `Install-Windows.ps1`; sign in on first run (`/login`).
+- The old `gh-copilot` extension (`ghcs`/`ghce`) is retired and no longer used.
+- Claude Code needs Git for Windows; set `CLAUDE_CODE_GIT_BASH_PATH` if Git is installed in a non-default location.
+- Starship is skipped inside Claude Code's shell (`CLAUDECODE` set) and in the PowerShell Extension terminal, and `.bashrc` only configures interactive shells, so agent-run commands get clean output.

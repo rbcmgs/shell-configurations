@@ -34,85 +34,13 @@ Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
 # Ctrl+RightArrow accepts the next word from inline prediction
 Set-PSReadLineKeyHandler -Chord 'Ctrl+RightArrow' -Function ForwardWord
 
-# --- GitHub Copilot CLI ---
-# ghcs: Copilot Suggest — suggests shell commands from natural language
-# ghce: Copilot Explain — explains a command in plain English
-# Requires: gh cli + gh-copilot extension (gh extension install github/gh-copilot)
-if (Get-Command gh -ErrorAction SilentlyContinue) {
-  function ghcs {
-    param(
-      [Parameter()]
-      [string]$Hostname,
-
-      [ValidateSet('gh', 'git', 'shell')]
-      [Alias('t')]
-      [string]$Target = 'shell',
-
-      [Parameter(Position = 0, ValueFromRemainingArguments)]
-      [string]$Prompt
-    )
-    begin {
-      $executeCommandFile = New-TemporaryFile
-      $envGhDebug = $Env:GH_DEBUG
-      $envGhHost = $Env:GH_HOST
-    }
-    process {
-      if ($PSBoundParameters['Debug']) { $Env:GH_DEBUG = 'api' }
-      $Env:GH_HOST = $Hostname
-      gh copilot suggest -t $Target -s "$executeCommandFile" $Prompt
-    }
-    end {
-      if ($executeCommandFile.Length -gt 0) {
-        $executeCommand = (Get-Content -Path $executeCommandFile -Raw).Trim()
-        [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($executeCommand)
-        $now = Get-Date
-        $executeCommandHistoryItem = [PSCustomObject]@{
-          CommandLine        = $executeCommand
-          ExecutionStatus    = [Management.Automation.Runspaces.PipelineState]::NotStarted
-          StartExecutionTime = $now
-          EndExecutionTime   = $now.AddSeconds(1)
-        }
-        Add-History -InputObject $executeCommandHistoryItem
-        Write-Host "`n"
-        Invoke-Expression $executeCommand
-      }
-    }
-    clean {
-      Remove-Item -Path $executeCommandFile
-      $Env:GH_DEBUG = $envGhDebug
-    }
-  }
-
-  function ghce {
-    param(
-      [Parameter()]
-      [string]$Hostname,
-
-      [Parameter(Position = 0, ValueFromRemainingArguments)]
-      [string[]]$Prompt
-    )
-    begin {
-      $envGhDebug = $Env:GH_DEBUG
-      $envGhHost = $Env:GH_HOST
-    }
-    process {
-      if ($PSBoundParameters['Debug']) { $Env:GH_DEBUG = 'api' }
-      $Env:GH_HOST = $Hostname
-      gh copilot explain $Prompt
-    }
-    clean {
-      $Env:GH_DEBUG = $envGhDebug
-      $Env:GH_HOST = $envGhHost
-    }
-  }
-}
-
 # --- Starship ---
 # Initialised last so it wraps earlier prompt customisations.
 # Skipped in the PowerShell Extension terminal (PSES) to avoid language-service timeouts;
 # Windows Terminal and regular VS Code terminals (ConsoleHost) get Starship, and
 # VS Code shell integration composes with it automatically.
-if ($Host.Name -ne 'Visual Studio Code Host' -and (Get-Command starship -ErrorAction SilentlyContinue)) {
+# Also skipped inside Claude Code's shell (CLAUDECODE is set) to keep agent output clean.
+if ($Host.Name -ne 'Visual Studio Code Host' -and -not $env:CLAUDECODE -and (Get-Command starship -ErrorAction SilentlyContinue)) {
   if (-not $env:STARSHIP_CONFIG) {
     $env:STARSHIP_CONFIG = Join-Path $HOME '.config\starship.toml'
   }
