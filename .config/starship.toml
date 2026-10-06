@@ -1,7 +1,10 @@
 # ~/.config/starship.toml
 # Green-heavy theme with teal, lime, and warm accents
 
+"$schema" = 'https://starship.rs/config-schema.json'
+
 add_newline = true
+scan_timeout = 30
 command_timeout = 1000
 format = """\
 [╭╴](bold #4a7c59)$os$username$hostname$kubernetes$directory$git_branch$git_status \

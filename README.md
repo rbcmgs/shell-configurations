@@ -22,6 +22,7 @@ Install-Module -Name Terminal-Icons -Scope CurrentUser
 | `.bashrc`                                     | Bash shell configuration with Starship init                    |
 | `PowerShell/Microsoft.PowerShell_profile.ps1` | PowerShell profile (Starship + PSReadLine + Terminal-Icons)    |
 | `Install-Windows.ps1`                         | Automated setup script for Windows 10/11                       |
+| `Install-Unix.sh`                             | Symlink-based setup for Linux/macOS (installs Starship)        |
 
 ## Quick Start (Windows)
 
@@ -49,6 +50,16 @@ Use `-Force` to overwrite existing configs without prompting, or `-SkipFontInsta
 .\Install-Windows.ps1 -Force
 .\Install-Windows.ps1 -SkipFontInstall
 ```
+
+## Quick Start (Linux / macOS)
+
+```sh
+./Install-Unix.sh
+```
+
+## Machine-specific overrides
+
+Untracked per-machine settings go in `~/.bashrc.local` (bash) or `profile.local.ps1` next to your `PowerShell` profile.
 
 ## Manual Setup
 
@@ -110,6 +121,8 @@ For the best experience in VSCode, set a Nerd Font as your terminal font:
 - Two-line prompt with git status, kubernetes context, and OS detection
 - **Dev toolchain**: Node.js version, Python version + virtualenv, package version
 - **Command duration**: shows elapsed time for commands taking >2s
+- **Transient prompt** (PowerShell): previous prompts collapse to `❯` to keep scrollback clean
+- Cached init script for faster PowerShell startup
 - Green-heavy color theme with teal, lime, and warm accent colors
 
 ### PSReadLine (PowerShell)
