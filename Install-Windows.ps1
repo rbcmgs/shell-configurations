@@ -255,7 +255,8 @@ Install-WingetTool -Command git -Id Git.Git -Name 'Git for Windows'
 Write-Step 'Checking GitHub Copilot CLI...'
 Install-WingetTool -Command copilot -Id GitHub.Copilot -Name 'GitHub Copilot CLI'
 if (Get-Command gh -ErrorAction SilentlyContinue) {
-    if (gh extension list 2>$null | Select-String 'gh-copilot') {
+    $legacyCopilot = gh extension list 2>$null | Select-String 'gh-copilot'
+    if ($legacyCopilot) {
         Write-Warn 'The deprecated gh-copilot extension is installed. Remove it: gh extension remove gh-copilot'
     }
 }
