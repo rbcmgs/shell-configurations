@@ -34,6 +34,54 @@ Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
 # Ctrl+RightArrow accepts the next word from inline prediction
 Set-PSReadLineKeyHandler -Chord 'Ctrl+RightArrow' -Function ForwardWord
 
+# --- GitHub Copilot CLI completion (PowerShell) ---
+# Copilot does not currently ship a native PowerShell completion script,
+# so we provide a lightweight argument completer for the most-used commands.
+if (Get-Command copilot -ErrorAction SilentlyContinue) {
+  $copilotTopLevelCommands = @(
+    'app', 'login', 'help', 'init', 'config', 'update', 'version',
+    'workflow', 'sessions', 'memories', 'plugin', 'mcp', 'skill',
+    'instruction', 'lsp', 'sandbox', 'completion'
+  )
+
+  $copilotGlobalOptions = @(
+    '-h', '--help',
+    '-v', '--version',
+    '-i', '--interactive',
+    '-p', '--prompt',
+    '-s', '--silent',
+    '-r', '--resume',
+    '-n', '--name',
+    '--continue',
+    '--model',
+    '--allow-all-tools', '--allow-all-paths', '--allow-all-urls', '--allow-all', '--yolo'
+  )
+
+  Register-ArgumentCompleter -Native -CommandName copilot -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $tokens = @($commandAst.CommandElements | Select-Object -Skip 1 | ForEach-Object { $_.Extent.Text })
+    $firstToken = if ($tokens.Count -ge 1) { $tokens[0] } else { '' }
+
+    $candidates = @()
+
+    if ($firstToken -eq 'completion') {
+      $candidates = @('bash', 'zsh', 'fish')
+    } elseif ($wordToComplete -like '-*') {
+      $candidates = $copilotGlobalOptions
+    } else {
+      $candidates = $copilotTopLevelCommands
+    }
+
+    $candidates |
+      Where-Object { $_ -like "$wordToComplete*" } |
+      Sort-Object -Unique |
+      ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+      }
+  }
+}
+
 # --- Starship ---
 # Initialised last so it wraps earlier prompt customisations.
 # Skipped in the PowerShell Extension terminal (PSES) to avoid language-service timeouts;

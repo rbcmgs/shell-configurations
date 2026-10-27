@@ -22,7 +22,7 @@ Install-Module -Name Terminal-Icons -Scope CurrentUser
 | `.bashrc`                                     | Bash shell configuration with Starship init                    |
 | `PowerShell/Microsoft.PowerShell_profile.ps1` | PowerShell profile (Starship + PSReadLine + Terminal-Icons)    |
 | `Install-Windows.ps1`                         | Automated setup script for Windows 10/11                       |
-| `Install-Unix.sh`                             | Symlink-based setup for Linux/macOS (installs Starship)        |
+| `Install-Unix.sh`                             | Setup for Linux/macOS (installs Starship, Node LTS on Debian/Ubuntu when needed, and Copilot CLI; then symlinks config files) |
 
 ## Quick Start (Windows)
 
@@ -56,6 +56,8 @@ Use `-Force` to overwrite existing configs without prompting, or `-SkipFontInsta
 ```sh
 ./Install-Unix.sh
 ```
+
+On Debian/Ubuntu (including WSL Ubuntu), the script will install Node.js LTS if missing, then install `@github/copilot` and pre-generate the bash completion cache.
 
 ## Machine-specific overrides
 
@@ -138,6 +140,10 @@ For the best experience in VSCode, set a Nerd Font as your terminal font:
 ### AI coding agents
 
 - `copilot` (GitHub Copilot CLI) and `claude` (Claude Code) are installed by `Install-Windows.ps1`; sign in on first run (`/login`).
+- On Linux/macOS, `Install-Unix.sh` installs `copilot` via npm when available.
 - The old `gh-copilot` extension (`ghcs`/`ghce`) is retired and no longer used.
 - Claude Code needs Git for Windows; set `CLAUDE_CODE_GIT_BASH_PATH` if Git is installed in a non-default location.
 - Starship is skipped inside Claude Code's shell (`CLAUDECODE` set) and in the PowerShell Extension terminal, and `.bashrc` only configures interactive shells, so agent-run commands get clean output.
+- Shell completion is configured from this repo:
+  - PowerShell uses `Register-ArgumentCompleter` for `copilot` in `PowerShell/Microsoft.PowerShell_profile.ps1`.
+  - Bash auto-generates and caches the script from `copilot completion bash` in `.bashrc`.

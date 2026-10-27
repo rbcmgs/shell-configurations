@@ -17,5 +17,18 @@ if command -v starship >/dev/null 2>&1; then
   eval "$(starship init bash)"
 fi
 
+# GitHub Copilot CLI completion
+if command -v copilot >/dev/null 2>&1; then
+  _copilot_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/copilot"
+  _copilot_completion_file="${_copilot_cache_dir}/completion.bash"
+  mkdir -p "$_copilot_cache_dir"
+
+  if [ ! -s "$_copilot_completion_file" ] || [ "$(command -v copilot)" -nt "$_copilot_completion_file" ]; then
+    copilot completion bash > "$_copilot_completion_file" 2>/dev/null || true
+  fi
+
+  [ -s "$_copilot_completion_file" ] && . "$_copilot_completion_file"
+fi
+
 # Machine-specific overrides (not tracked in git)
 [ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"

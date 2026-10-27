@@ -1,0 +1,3 @@
+# Keep Unix shell files LF for Linux/macOS/WSL compatibility
+*.sh text eol=lf
+.bashrc text eol=lf
